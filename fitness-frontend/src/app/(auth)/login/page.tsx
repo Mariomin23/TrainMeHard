@@ -1,33 +1,37 @@
-'use client';
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/auth.store';
-import { login } from '@/services/auth.service';
+// fitness-frontend/src/app/(auth)/login/page.tsx
+'use client'
+import { useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useAuthStore } from '@/store/auth.store'
+import { login } from '@/services/auth.service'
+import type { LoginPayload } from '@/types/auth'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { setAuth } = useAuthStore();
-  const router = useRouter();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const { setAuth } = useAuthStore()
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+    e.preventDefault()
+    setError('')
+    setLoading(true)
     try {
-      const data = await login(email, password);
-      setAuth(data.token, data.user);
-      router.push(data.user.role === 'PROFESSIONAL' ? '/dashboard/professional' : '/dashboard');
+      const payload: LoginPayload = { email, password }
+      const data = await login(payload)
+      setAuth(data.accessToken, data.user)
+      document.cookie = `tmh_session=1; path=/; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`
+      router.push(data.user.role === 'professional' ? '/dashboard/professional' : '/dashboard')
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      setError(msg || 'Error al iniciar sesión');
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+      setError(msg || 'Error al iniciar sesión')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <main className="flex-1 flex items-center justify-center px-4 py-16 bg-gray-950">
@@ -52,7 +56,7 @@ export default function LoginPage() {
               <input
                 type="email"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-gray-900 bg-gray-50 focus:bg-white"
                 placeholder="tu@email.com"
@@ -63,7 +67,7 @@ export default function LoginPage() {
               <input
                 type="password"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-gray-900 bg-gray-50 focus:bg-white"
                 placeholder="••••••••"
@@ -88,5 +92,5 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
-  );
+  )
 }

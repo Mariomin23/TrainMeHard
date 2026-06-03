@@ -1,24 +1,25 @@
-'use client';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { LogOut, LayoutDashboard, Menu, X } from 'lucide-react';
-import { useAuthStore } from '@/store/auth.store';
+// fitness-frontend/src/components/Navbar.tsx
+'use client'
+import Link from 'next/link'
+import { useState } from 'react'
+import { LogOut, LayoutDashboard, Menu, X } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function Navbar() {
-  const { user, logout, hydrate } = useAuthStore();
-  const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const { user, logout } = useAuth()
+  const [menuOpen, setMenuOpen] = useState(false)
 
-  useEffect(() => { hydrate(); }, [hydrate]);
+  const handleLogout = async () => {
+    setMenuOpen(false)
+    await logout()
+  }
 
-  const handleLogout = () => {
-    logout();
-    setMenuOpen(false);
-    router.push('/');
-  };
+  const closeMenu = () => setMenuOpen(false)
 
-  const closeMenu = () => setMenuOpen(false);
+  const dashboardHref =
+    user?.role === 'professional' ? '/dashboard/professional' : '/dashboard'
+
+  const displayName = user ? user.firstName : null
 
   return (
     <nav className="bg-white/95 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
@@ -35,11 +36,11 @@ export default function Navbar() {
           {user ? (
             <>
               <Link
-                href={user.role === 'PROFESSIONAL' ? '/dashboard/professional' : '/dashboard'}
+                href={dashboardHref}
                 className="flex items-center gap-1.5 hover:text-green-600 transition-colors"
               >
                 <LayoutDashboard size={16} />
-                {user.name.split(' ')[0]}
+                {displayName}
               </Link>
               <button
                 onClick={handleLogout}
@@ -53,7 +54,10 @@ export default function Navbar() {
               <Link href="/login" className="hover:text-green-600 transition-colors">
                 Iniciar Sesión
               </Link>
-              <Link href="/register" className="px-4 py-2 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-400 transition-colors">
+              <Link
+                href="/register"
+                className="px-4 py-2 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-400 transition-colors"
+              >
                 Regístrate
               </Link>
             </>
@@ -62,7 +66,7 @@ export default function Navbar() {
 
         <button
           className="md:hidden text-gray-600 p-1"
-          onClick={() => setMenuOpen(prev => !prev)}
+          onClick={() => setMenuOpen((prev) => !prev)}
           aria-label="Toggle menu"
         >
           {menuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -78,12 +82,12 @@ export default function Navbar() {
           {user ? (
             <>
               <Link
-                href={user.role === 'PROFESSIONAL' ? '/dashboard/professional' : '/dashboard'}
+                href={dashboardHref}
                 className="flex items-center gap-1.5 hover:text-green-600 transition-colors"
                 onClick={closeMenu}
               >
                 <LayoutDashboard size={16} />
-                {user.name.split(' ')[0]}
+                {displayName}
               </Link>
               <button
                 onClick={handleLogout}
@@ -109,5 +113,5 @@ export default function Navbar() {
         </div>
       )}
     </nav>
-  );
+  )
 }

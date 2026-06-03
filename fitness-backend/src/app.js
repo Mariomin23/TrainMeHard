@@ -19,7 +19,7 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), handleWebhoo
 
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(helmet());
-app.use(morgan('dev'));
+app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json());
 app.use(cookieParser());
 app.use(mongoSanitize());

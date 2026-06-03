@@ -1,8 +1,6 @@
 import Professional from '../models/Professional.model.js';
 import logger from '../utils/logger.util.js';
-
-const makeError = (message, code, statusCode) =>
-  Object.assign(new Error(message), { code, statusCode });
+import { makeError } from '../utils/errors.util.js';
 
 export const createOrUpdateProfile = async (userId, data) => {
   const profile = await Professional.findOneAndUpdate(

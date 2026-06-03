@@ -23,7 +23,7 @@ const loginSchema = z.object({
 
 router.post('/register', authLimiter, validate(registerSchema), register);
 router.post('/login', authLimiter, validate(loginSchema), login);
-router.post('/refresh', refresh);
+router.post('/refresh', authLimiter, refresh);
 router.post('/logout', requireAuth, logout);
 
 export default router;

@@ -20,7 +20,7 @@ export const errorHandler = (err, req, res, next) => {
   }
 
   const statusCode = err.statusCode || err.status || 500;
-  const code = err.code || 'INTERNAL_ERROR';
+  const code = (typeof err.code === 'string' && err.code) || 'INTERNAL_ERROR';
 
   res.status(statusCode).json({
     success: false,

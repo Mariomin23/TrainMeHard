@@ -3,12 +3,10 @@ import User from '../models/User.model.js';
 import Professional from '../models/Professional.model.js';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt.util.js';
 import logger from '../utils/logger.util.js';
+import { makeError } from '../utils/errors.util.js';
 
 const SALT_ROUNDS = 12;
 const REFRESH_HASH_ROUNDS = 10;
-
-const makeError = (message, code, statusCode) =>
-  Object.assign(new Error(message), { code, statusCode });
 
 const setRefreshCookie = (res, token) => {
   res.cookie('refreshToken', token, {

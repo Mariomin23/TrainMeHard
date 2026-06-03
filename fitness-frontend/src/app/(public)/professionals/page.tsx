@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import TrainerCard from '@/components/TrainerCard';
@@ -22,29 +22,28 @@ function ProfessionalsContent() {
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
-  const fetchProfessionals = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params: Record<string, string | number> = {};
-      if (query) params.specialty = query;
-      if (minRate) params.minRate = Number(minRate);
-      if (maxRate) params.maxRate = Number(maxRate);
-      const data = await searchTrainers(params);
-      setProfessionals(data.trainers);
-      setTotal(data.total);
-    } catch {
-      setProfessionals([]);
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      setLoading(true);
+      try {
+        const params: Record<string, string | number> = {};
+        if (query) params.specialty = query;
+        if (minRate) params.minRate = Number(minRate);
+        if (maxRate) params.maxRate = Number(maxRate);
+        const data = await searchTrainers(params);
+        if (!cancelled) { setProfessionals(data.trainers); setTotal(data.total); }
+      } catch {
+        if (!cancelled) setProfessionals([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    run();
+    return () => { cancelled = true; };
   }, [query, minRate, maxRate]);
 
-  useEffect(() => { fetchProfessionals(); }, [fetchProfessionals]);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchProfessionals();
-  };
+  const handleSearch = (e: React.FormEvent) => { e.preventDefault(); };
 
   return (
     <main className="flex-1 bg-gray-50">

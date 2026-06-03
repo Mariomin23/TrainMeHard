@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import TrainerCard from '@/components/TrainerCard';
@@ -19,29 +19,28 @@ function TrainersContent() {
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
-  const fetchTrainers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params: Record<string, string | number> = {};
-      if (query) params.specialty = query;
-      if (minRate) params.minRate = Number(minRate);
-      if (maxRate) params.maxRate = Number(maxRate);
-      const data = await searchTrainers(params);
-      setTrainers(data.trainers);
-      setTotal(data.total);
-    } catch {
-      setTrainers([]);
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      setLoading(true);
+      try {
+        const params: Record<string, string | number> = {};
+        if (query) params.specialty = query;
+        if (minRate) params.minRate = Number(minRate);
+        if (maxRate) params.maxRate = Number(maxRate);
+        const data = await searchTrainers(params);
+        if (!cancelled) { setTrainers(data.trainers); setTotal(data.total); }
+      } catch {
+        if (!cancelled) setTrainers([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    run();
+    return () => { cancelled = true; };
   }, [query, minRate, maxRate]);
 
-  useEffect(() => { fetchTrainers(); }, [fetchTrainers]);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchTrainers();
-  };
+  const handleSearch = (e: React.FormEvent) => { e.preventDefault(); };
 
   return (
     <main className="flex-1 bg-gray-50">

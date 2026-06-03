@@ -1,10 +1,14 @@
-import api from './api';
+import api from '@/lib/api'
+import type { AuthTokens, LoginPayload, RegisterPayload, User } from '@/types/auth'
 
-export const login = (email: string, password: string) =>
-  api.post('/auth/login', { email, password }).then(r => r.data.data);
+export const login = (payload: LoginPayload): Promise<AuthTokens> =>
+  api.post('/auth/login', payload).then((r) => r.data.data)
 
-export const register = (name: string, email: string, password: string, role: 'USER' | 'PROFESSIONAL') =>
-  api.post('/auth/register', { name, email, password, role }).then(r => r.data.data);
+export const register = (payload: RegisterPayload): Promise<AuthTokens> =>
+  api.post('/auth/register', payload).then((r) => r.data.data)
 
-export const getMe = () =>
-  api.get('/users/me').then(r => r.data.data);
+export const logout = (): Promise<void> =>
+  api.delete('/auth/logout').then(() => undefined)
+
+export const getMe = (): Promise<User> =>
+  api.get('/users/me').then((r) => r.data.data)

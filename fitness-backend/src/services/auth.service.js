@@ -89,7 +89,7 @@ export const refreshTokens = async (rawToken, res) => {
   }
 
   const user = await User.findById(payload.id);
-  if (!user?.refreshTokenHash) {
+  if (!user || !user.refreshTokenHash) {
     throw makeError('Token revoked', 'INVALID_REFRESH_TOKEN', 401);
   }
 

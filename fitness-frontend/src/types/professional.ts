@@ -1,4 +1,16 @@
 // fitness-frontend/src/types/professional.ts
+export type ProfessionalType = 'trainer' | 'nutritionist' | 'physiotherapist'
+
+export interface AvailabilitySlot {
+  day: string
+  timeSlots: string[]
+}
+
+export interface ProfessionalLocation {
+  city: string
+  country: string
+}
+
 export interface ProfessionalUser {
   firstName: string
   lastName: string
@@ -9,25 +21,47 @@ export interface ProfessionalUser {
 export interface Professional {
   _id: string
   userId: ProfessionalUser
-  specialties: string[]
+  professionalType: ProfessionalType
   bio?: string
+  specialties: string[]
+  location?: ProfessionalLocation
   sessionPrice: number
+  isApproved?: boolean
   rating: number
   reviewCount: number
-  professionalType?: 'trainer' | 'nutritionist' | 'physiotherapist'
-  availability?: { day: string; timeSlots: string[] }[]
+  availability?: AvailabilitySlot[]
 }
 
 export interface ProfessionalSearchParams {
+  type?: ProfessionalType
   specialty?: string
-  minRate?: number
-  maxRate?: number
-  type?: string
+  city?: string
+  minPrice?: number
+  maxPrice?: number
+  minRating?: number
   page?: number
 }
 
 export interface SearchResult {
-  trainers: Professional[]
+  professionals: Professional[]
   total: number
   page?: number
+  totalPages?: number
+}
+
+export interface Review {
+  _id: string
+  userId: { firstName: string; lastName: string; avatar?: string }
+  rating: number
+  comment?: string
+  createdAt: string
+}
+
+export interface UpdateProfilePayload {
+  professionalType?: ProfessionalType
+  bio?: string
+  specialties?: string[]
+  sessionPrice?: number
+  location?: { city: string; country: string }
+  availability?: AvailabilitySlot[]
 }

@@ -1,37 +1,21 @@
-'use client';
-import { create } from 'zustand';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'USER' | 'PROFESSIONAL' | 'ADMIN';
-}
+'use client'
+import { create } from 'zustand'
+import type { User } from '@/types/auth'
 
 interface AuthStore {
-  user: User | null;
-  token: string | null;
-  setAuth: (token: string, user: User) => void;
-  logout: () => void;
-  hydrate: () => void;
+  user: User | null
+  token: string | null
+  isHydrating: boolean
+  setAuth: (token: string, user: User) => void
+  setHydrating: (v: boolean) => void
+  logout: () => void
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
   token: null,
-  setAuth: (token, user) => {
-    localStorage.setItem('tmh_token', token);
-    localStorage.setItem('tmh_user', JSON.stringify(user));
-    set({ token, user });
-  },
-  logout: () => {
-    localStorage.removeItem('tmh_token');
-    localStorage.removeItem('tmh_user');
-    set({ token: null, user: null });
-  },
-  hydrate: () => {
-    const token = localStorage.getItem('tmh_token');
-    const raw = localStorage.getItem('tmh_user');
-    if (token && raw) set({ token, user: JSON.parse(raw) });
-  },
-}));
+  isHydrating: false,
+  setAuth: (token, user) => set({ token, user }),
+  setHydrating: (isHydrating) => set({ isHydrating }),
+  logout: () => set({ token: null, user: null }),
+}))

@@ -16,7 +16,7 @@ export const getTrainerById = (id: string) =>
 export const getMyTrainerProfile = () =>
   api.get('/trainers/me/profile').then(r => r.data.data);
 
-export const updateMyProfile = (data: { specialties?: string[]; bio?: string; hourlyRate?: number }) =>
+export const updateMyProfile = (data: { specialties?: string[]; bio?: string; hourlyRate?: number; sessionPrice?: number }) =>
   api.put('/trainers/me/profile', data).then(r => r.data.data);
 
 export const updateAvailability = (availability: { day: string; timeSlots: string[] }[]) =>

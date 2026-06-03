@@ -1,9 +1,22 @@
-import Link from 'next/link';
-import { Star, Clock } from 'lucide-react';
-import type { Professional } from '@/types/professional';
+// fitness-frontend/src/components/TrainerCard.tsx
+import Link from 'next/link'
+import { Star, MapPin } from 'lucide-react'
+import type { Professional, ProfessionalType } from '@/types/professional'
+
+const TYPE_LABELS: Record<ProfessionalType, string> = {
+  trainer: 'Entrenador',
+  nutritionist: 'Nutricionista',
+  physiotherapist: 'Fisioterapeuta',
+}
+
+const TYPE_COLORS: Record<ProfessionalType, string> = {
+  trainer: 'bg-green-50 text-green-700',
+  nutritionist: 'bg-blue-50 text-blue-700',
+  physiotherapist: 'bg-purple-50 text-purple-700',
+}
 
 export default function TrainerCard({ trainer }: { trainer: Professional }) {
-  const initial = trainer.userId.firstName.charAt(0).toUpperCase();
+  const initial = trainer.userId.firstName.charAt(0).toUpperCase()
 
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col gap-4">
@@ -21,10 +34,19 @@ export default function TrainerCard({ trainer }: { trainer: Professional }) {
         </div>
         <div className="text-right">
           <p className="text-2xl font-bold text-gray-900">{trainer.sessionPrice}€</p>
-          <p className="text-xs text-gray-400 flex items-center gap-1 justify-end mt-1">
-            <Clock size={11} /> / hora
-          </p>
+          <p className="text-xs text-gray-400 mt-1">por sesión</p>
         </div>
+      </div>
+
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${TYPE_COLORS[trainer.professionalType]}`}>
+          {TYPE_LABELS[trainer.professionalType]}
+        </span>
+        {trainer.location?.city && (
+          <span className="flex items-center gap-1 text-xs text-gray-400">
+            <MapPin size={11} /> {trainer.location.city}
+          </span>
+        )}
       </div>
 
       {trainer.bio && (
@@ -46,5 +68,5 @@ export default function TrainerCard({ trainer }: { trainer: Professional }) {
         Ver perfil
       </Link>
     </div>
-  );
+  )
 }

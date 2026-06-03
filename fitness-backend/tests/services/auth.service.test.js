@@ -84,4 +84,34 @@ describe('auth.service', () => {
       expect(res.clearCookie).toHaveBeenCalled();
     });
   });
+
+  describe('refreshTokens', () => {
+    it('lanza INVALID_REFRESH_TOKEN si no hay token', async () => {
+      await expect(authService.refreshTokens(undefined, mockRes()))
+        .rejects.toMatchObject({ code: 'INVALID_REFRESH_TOKEN', statusCode: 401 });
+    });
+
+    it('lanza INVALID_REFRESH_TOKEN si el token JWT es inválido', async () => {
+      await expect(authService.refreshTokens('not-a-jwt', mockRes()))
+        .rejects.toMatchObject({ code: 'INVALID_REFRESH_TOKEN', statusCode: 401 });
+    });
+
+    it('detecta reutilización de token — borra hash y lanza error', async () => {
+      const { signRefreshToken } = await import('../../src/utils/jwt.util.js');
+      const rawToken = signRefreshToken('uid99');
+
+      const fakeUser = {
+        _id: 'uid99',
+        refreshTokenHash: 'some_hash_that_will_not_match',
+        save: vi.fn().mockResolvedValue(true),
+      };
+      User.findById.mockResolvedValue(fakeUser);
+
+      await expect(authService.refreshTokens(rawToken, mockRes()))
+        .rejects.toMatchObject({ code: 'INVALID_REFRESH_TOKEN', statusCode: 401 });
+
+      expect(fakeUser.save).toHaveBeenCalled();
+      expect(fakeUser.refreshTokenHash).toBeNull();
+    });
+  });
 });

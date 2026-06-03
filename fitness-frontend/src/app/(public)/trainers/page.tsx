@@ -132,8 +132,7 @@ function TrainersContent() {
           </div>
         ) : (
           <div className="grid md:grid-cols-3 gap-6">
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {trainers.map(t => <TrainerCard key={t._id} trainer={t as any} />)}
+            {trainers.map(t => <TrainerCard key={t._id} trainer={t} />)}
           </div>
         )}
       </div>

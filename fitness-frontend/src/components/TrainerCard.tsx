@@ -1,18 +1,9 @@
 import Link from 'next/link';
 import { Star, Clock } from 'lucide-react';
+import type { Professional } from '@/types/professional';
 
-interface Trainer {
-  _id: string;
-  specialties: string[];
-  bio?: string;
-  hourlyRate: number;
-  rating: number;
-  reviewsCount: number;
-  userId: { name: string };
-}
-
-export default function TrainerCard({ trainer }: { trainer: Trainer }) {
-  const initial = trainer.userId.name.charAt(0).toUpperCase();
+export default function TrainerCard({ trainer }: { trainer: Professional }) {
+  const initial = trainer.userId.firstName.charAt(0).toUpperCase();
 
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col gap-4">
@@ -21,15 +12,15 @@ export default function TrainerCard({ trainer }: { trainer: Trainer }) {
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-400 to-green-700 flex items-center justify-center text-white font-bold text-lg mb-3 shadow-sm">
             {initial}
           </div>
-          <h3 className="font-semibold text-gray-900">{trainer.userId.name}</h3>
+          <h3 className="font-semibold text-gray-900">{`${trainer.userId.firstName} ${trainer.userId.lastName}`}</h3>
           <div className="flex items-center gap-1 mt-1 text-sm text-gray-500">
             <Star size={13} className="text-yellow-400 fill-yellow-400" />
             <span className="font-medium">{trainer.rating > 0 ? trainer.rating.toFixed(1) : 'Nuevo'}</span>
-            {trainer.reviewsCount > 0 && <span className="text-gray-400">({trainer.reviewsCount})</span>}
+            {trainer.reviewCount > 0 && <span className="text-gray-400">({trainer.reviewCount})</span>}
           </div>
         </div>
         <div className="text-right">
-          <p className="text-2xl font-bold text-gray-900">{trainer.hourlyRate}€</p>
+          <p className="text-2xl font-bold text-gray-900">{trainer.sessionPrice}€</p>
           <p className="text-xs text-gray-400 flex items-center gap-1 justify-end mt-1">
             <Clock size={11} /> / hora
           </p>

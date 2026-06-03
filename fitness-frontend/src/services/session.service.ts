@@ -1,10 +1,11 @@
-import api from './api';
+import api from '@/lib/api'
+import type { Session, CreateSessionPayload } from '@/types/session'
 
-export const createSession = (trainerId: string, sessionDate: string, durationMinutes: number) =>
-  api.post('/sessions', { trainerId, sessionDate, durationMinutes }).then(r => r.data.data);
+export const createSession = (payload: CreateSessionPayload): Promise<Session> =>
+  api.post('/sessions', payload).then((r) => r.data.data)
 
-export const getMySessions = () =>
-  api.get('/sessions').then(r => r.data.data);
+export const getMySessions = (): Promise<Session[]> =>
+  api.get('/sessions').then((r) => r.data.data)
 
-export const updateSessionStatus = (id: string, status: string) =>
-  api.patch(`/sessions/${id}/status`, { status }).then(r => r.data.data);
+export const updateSessionStatus = (id: string, status: string): Promise<Session> =>
+  api.patch(`/sessions/${id}/status`, { status }).then((r) => r.data.data)

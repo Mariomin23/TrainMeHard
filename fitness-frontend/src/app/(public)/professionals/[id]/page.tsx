@@ -38,8 +38,7 @@ export default function ProfessionalDetailPage() {
     setError('');
     setBooking(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const session = await (createSession as any)({ professionalId: id, scheduledAt: new Date(bookingDate).toISOString() });
+      const session = await createSession({ professionalId: id, scheduledAt: new Date(bookingDate).toISOString() });
       setCheckoutSession({ id: session._id, amount: session.sessionPrice });
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;

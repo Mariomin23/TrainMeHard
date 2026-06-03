@@ -132,8 +132,7 @@ function ProfessionalsContent() {
           </div>
         ) : (
           <div className="grid md:grid-cols-3 gap-6">
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {professionals.map(p => <TrainerCard key={p._id} trainer={p as any} />)}
+            {professionals.map(p => <TrainerCard key={p._id} trainer={p} />)}
           </div>
         )}
       </div>

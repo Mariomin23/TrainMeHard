@@ -1,21 +1,40 @@
+// fitness-frontend/src/app/(protected)/dashboard/professional/page.tsx
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
-import { getMyTrainerProfile, updateMyProfile, updateAvailability } from '@/services/trainer.service';
+import { getMyProfile, updateProfile } from '@/services/professional.service';
 import { getMySessions, updateSessionStatus } from '@/services/session.service';
 import SessionCard from '@/components/SessionCard';
-import { Save, Plus, Trash2 } from 'lucide-react';
+import { Save, Plus, Trash2, AlertCircle } from 'lucide-react';
 import type { Session } from '@/types/session';
+import type { Professional, ProfessionalType, AvailabilitySlot } from '@/types/professional';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const DAYS_ES: Record<string, string> = { Monday: 'Lunes', Tuesday: 'Martes', Wednesday: 'Miércoles', Thursday: 'Jueves', Friday: 'Viernes', Saturday: 'Sábado', Sunday: 'Domingo' };
+const DAYS_ES: Record<string, string> = {
+  Monday: 'Lunes', Tuesday: 'Martes', Wednesday: 'Miércoles',
+  Thursday: 'Jueves', Friday: 'Viernes', Saturday: 'Sábado', Sunday: 'Domingo',
+};
 
-interface AvailabilitySlot { day: string; timeSlots: string[] }
+const TYPE_OPTIONS: { value: ProfessionalType; label: string }[] = [
+  { value: 'trainer', label: 'Entrenador Personal' },
+  { value: 'nutritionist', label: 'Nutricionista' },
+  { value: 'physiotherapist', label: 'Fisioterapeuta' },
+];
 
 export default function TrainerDashboardPage() {
   const { user } = useAuthStore();
+  const router = useRouter();
 
-  const [profile, setProfile] = useState({ specialties: [] as string[], bio: '', sessionPrice: 0 });
+  const [isApproved, setIsApproved] = useState<boolean | undefined>(undefined);
+  const [profile, setProfile] = useState({
+    specialties: [] as string[],
+    bio: '',
+    sessionPrice: 0,
+    professionalType: '' as ProfessionalType | '',
+    city: '',
+    country: '',
+  });
   const [specialtyInput, setSpecialtyInput] = useState('');
   const [availability, setAvailability] = useState<AvailabilitySlot[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -26,24 +45,42 @@ export default function TrainerDashboardPage() {
 
   useEffect(() => {
     if (!user) return;
-    Promise.all([getMyTrainerProfile(), getMySessions()])
-      .then(([t, s]) => {
-        setProfile({ specialties: t.specialties || [], bio: t.bio || '', sessionPrice: t.sessionPrice || 0 });
-        setAvailability(t.availability || []);
+    Promise.all([getMyProfile(), getMySessions()])
+      .then(([p, s]: [Professional, Session[]]) => {
+        setIsApproved(p.isApproved);
+        setProfile({
+          specialties: p.specialties || [],
+          bio: p.bio || '',
+          sessionPrice: p.sessionPrice || 0,
+          professionalType: p.professionalType || '',
+          city: p.location?.city || '',
+          country: p.location?.country || '',
+        });
+        setAvailability(p.availability || []);
         setSessions(s);
       })
+      .catch((err: unknown) => {
+        const status = (err as { response?: { status?: number } })?.response?.status;
+        if (status === 404) router.push('/dashboard/professional/setup');
+      })
       .finally(() => setLoading(false));
-  }, [user]);
+  }, [user, router]);
 
   const handleSaveProfile = async () => {
     setSaving(true);
-    await updateMyProfile({ ...profile }).catch(() => {});
+    await updateProfile({
+      bio: profile.bio,
+      specialties: profile.specialties,
+      sessionPrice: profile.sessionPrice,
+      professionalType: profile.professionalType as ProfessionalType,
+      location: { city: profile.city, country: profile.country },
+    }).catch(() => {});
     setSaving(false);
   };
 
   const handleSaveAvailability = async () => {
     setSavingAvail(true);
-    await updateAvailability(availability).catch(() => {});
+    await updateProfile({ availability }).catch(() => {});
     setSavingAvail(false);
   };
 
@@ -77,7 +114,7 @@ export default function TrainerDashboardPage() {
 
   const handleConfirm = async (id: string) => {
     await updateSessionStatus(id, 'confirmed');
-    setSessions(s => s.map(x => x._id === id ? { ...x, status: 'pending' } : x));
+    setSessions(s => s.map(x => x._id === id ? { ...x, status: 'paid' as const } : x));
   };
 
   const TABS = [
@@ -94,7 +131,16 @@ export default function TrainerDashboardPage() {
           <p className="text-gray-500 text-sm mt-1">Hola, {user?.firstName}</p>
         </div>
 
-        {/* Tabs */}
+        {isApproved === false && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-2xl flex items-start gap-3">
+            <AlertCircle size={18} className="text-yellow-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-yellow-800">Perfil pendiente de aprobación</p>
+              <p className="text-xs text-yellow-700 mt-0.5">Tu perfil está siendo revisado. Aparecerás en los resultados de búsqueda una vez aprobado.</p>
+            </div>
+          </div>
+        )}
+
         <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-8 w-fit">
           {TABS.map(t => (
             <button
@@ -113,7 +159,6 @@ export default function TrainerDashboardPage() {
           </div>
         ) : (
           <>
-            {/* SESSIONS TAB */}
             {tab === 'sessions' && (
               <div className="flex flex-col gap-3">
                 {sessions.length === 0 ? (
@@ -127,11 +172,30 @@ export default function TrainerDashboardPage() {
               </div>
             )}
 
-            {/* PROFILE TAB */}
             {tab === 'profile' && (
               <div className="bg-white rounded-3xl p-8 border border-gray-100 flex flex-col gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Tarifa por sesión (€)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de profesional</label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {TYPE_OPTIONS.map(({ value, label }) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setProfile(p => ({ ...p, professionalType: value }))}
+                        className={`py-2.5 px-2 rounded-xl border text-sm font-medium transition-all text-center ${
+                          profile.professionalType === value
+                            ? 'border-green-500 bg-green-50 text-green-700'
+                            : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Precio por sesión (€)</label>
                   <input
                     type="number"
                     value={profile.sessionPrice}
@@ -139,6 +203,7 @@ export default function TrainerDashboardPage() {
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Bio (máx. 500 caracteres)</label>
                   <textarea
@@ -147,10 +212,11 @@ export default function TrainerDashboardPage() {
                     maxLength={500}
                     rows={4}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500 text-gray-900 resize-none"
-                    placeholder="Cuéntanos sobre ti, tu experiencia y metodología..."
+                    placeholder="Cuéntanos sobre ti..."
                   />
                   <p className="text-xs text-gray-400 mt-1 text-right">{profile.bio.length}/500</p>
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Especialidades</label>
                   <div className="flex flex-wrap gap-2 mb-3">
@@ -178,6 +244,29 @@ export default function TrainerDashboardPage() {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Ciudad</label>
+                    <input
+                      type="text"
+                      value={profile.city}
+                      onChange={e => setProfile(p => ({ ...p, city: e.target.value }))}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                      placeholder="Madrid"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">País</label>
+                    <input
+                      type="text"
+                      value={profile.country}
+                      onChange={e => setProfile(p => ({ ...p, country: e.target.value }))}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                      placeholder="España"
+                    />
+                  </div>
+                </div>
+
                 <button
                   onClick={handleSaveProfile}
                   disabled={saving}
@@ -188,7 +277,6 @@ export default function TrainerDashboardPage() {
               </div>
             )}
 
-            {/* AVAILABILITY TAB */}
             {tab === 'availability' && (
               <div className="bg-white rounded-3xl p-8 border border-gray-100 flex flex-col gap-6">
                 <p className="text-sm text-gray-500">Selecciona los días y añade franjas horarias (formato HH:MM-HH:MM)</p>
@@ -207,7 +295,7 @@ export default function TrainerDashboardPage() {
                         <span className={`text-sm font-medium ${active ? 'text-gray-900' : 'text-gray-400'}`}>{DAYS_ES[day]}</span>
                       </div>
                       {active && slot && (
-                        <div className="ml-13 pl-13 flex flex-col gap-2 ml-12">
+                        <div className="flex flex-col gap-2 ml-12">
                           {slot.timeSlots.map((ts, i) => (
                             <div key={i} className="flex items-center gap-2">
                               <input
@@ -230,7 +318,6 @@ export default function TrainerDashboardPage() {
                     </div>
                   );
                 })}
-
                 <button
                   onClick={handleSaveAvailability}
                   disabled={savingAvail}

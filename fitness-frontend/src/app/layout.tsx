@@ -1,9 +1,8 @@
-import type { Metadata } from 'next';
-import { Geist } from 'next/font/google';
-import './globals.css';
-import Navbar from '@/components/Navbar';
+import type { Metadata } from 'next'
+import { Geist } from 'next/font/google'
+import './globals.css'
 
-const geist = Geist({ subsets: ['latin'], variable: '--font-geist' });
+const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
 
 export const metadata: Metadata = {
   title: 'TrainMeHard — Encuentra tu Entrenador',
@@ -15,15 +14,14 @@ export const metadata: Metadata = {
     url: 'https://trainmehard.vercel.app',
     siteName: 'TrainMeHard',
   },
-};
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`${geist.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-white text-gray-900">
-        <Navbar />
         {children}
       </body>
     </html>
-  );
+  )
 }

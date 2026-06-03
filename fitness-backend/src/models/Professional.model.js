@@ -23,6 +23,10 @@ const professionalSchema = new mongoose.Schema(
     isApproved: { type: Boolean, default: false },
     rating: { type: Number, default: 0, min: 0, max: 5 },
     reviewCount: { type: Number, default: 0 },
+    availability: [{
+      day: { type: String, required: true },
+      timeSlots: [{ type: String }],
+    }],
   },
   { timestamps: true }
 );

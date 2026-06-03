@@ -17,6 +17,10 @@ const updateProfileSchema = z.object({
   }).optional(),
   sessionPrice: z.number().min(0).optional(),
   professionalType: z.enum(['trainer', 'nutritionist', 'physiotherapist']).optional(),
+  availability: z.array(z.object({
+    day: z.string(),
+    timeSlots: z.array(z.string()),
+  })).optional(),
 });
 
 router.get('/', publicLimiter, search);

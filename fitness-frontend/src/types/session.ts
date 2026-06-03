@@ -1,19 +1,20 @@
 // fitness-frontend/src/types/session.ts
-export type SessionStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
-export type PaymentStatus = 'PENDING' | 'PAID' | 'REFUNDED'
+export type SessionStatus = 'pending' | 'paid' | 'completed' | 'cancelled' | 'disputed'
 
 export interface Session {
   _id: string
-  sessionDate: string
-  durationMinutes: number
-  price: number
+  userId: string
+  professionalId: string
   status: SessionStatus
-  paymentStatus: PaymentStatus
-  trainerId?: { specialties: string[]; hourlyRate: number }
+  sessionPrice: number
+  platformFee: number
+  professionalPayout: number
+  stripePaymentIntentId?: string
+  scheduledAt?: string
+  createdAt: string
 }
 
 export interface CreateSessionPayload {
-  trainerId: string
-  sessionDate: string
-  durationMinutes: number
+  professionalId: string
+  scheduledAt: string
 }

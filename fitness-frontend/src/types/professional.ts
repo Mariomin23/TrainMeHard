@@ -11,10 +11,10 @@ export interface Professional {
   userId: ProfessionalUser
   specialties: string[]
   bio?: string
-  hourlyRate: number
+  sessionPrice: number
   rating: number
-  reviewsCount: number
-  type?: 'trainer' | 'nutritionist' | 'physiotherapist'
+  reviewCount: number
+  professionalType?: 'trainer' | 'nutritionist' | 'physiotherapist'
   availability?: { day: string; timeSlots: string[] }[]
 }
 

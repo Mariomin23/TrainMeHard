@@ -1,12 +1,12 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { getStripeStatus } from '@/services/professional.service';
 import type { StripeStatus } from '@/types/professional';
 
-export default function StripeReturnPage() {
+function StripeReturnContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const isRefresh = searchParams.get('refresh') === 'true';
@@ -64,5 +64,17 @@ export default function StripeReturnPage() {
         </Link>
       </div>
     </main>
+  );
+}
+
+export default function StripeReturnPage() {
+  return (
+    <Suspense fallback={
+      <main className="flex-1 flex items-center justify-center bg-gray-50">
+        <Loader2 size={32} className="animate-spin text-green-600" />
+      </main>
+    }>
+      <StripeReturnContent />
+    </Suspense>
   );
 }

@@ -13,6 +13,7 @@ import adminRoutes from './routes/admin.routes.js';
 import { handleWebhook } from './controllers/session.controller.js';
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Webhook necesita raw body — debe ir ANTES de express.json()
 app.post('/api/webhook', express.raw({ type: 'application/json' }), handleWebhook);

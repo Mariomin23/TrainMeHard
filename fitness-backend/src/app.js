@@ -10,6 +10,7 @@ import authRoutes from './routes/auth.routes.js';
 import professionalRoutes from './routes/professional.routes.js';
 import sessionRoutes from './routes/session.routes.js';
 import reviewRoutes from './routes/review.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 import { handleWebhook } from './controllers/session.controller.js';
 
 const app = express();
@@ -30,6 +31,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/professionals', professionalRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.use(errorHandler);
 

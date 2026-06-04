@@ -17,6 +17,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!user) return;
     if (user.role === 'professional') { router.push('/dashboard/professional'); return; }
+    if (user.role === 'admin' || user.role === 'super_admin') { router.push('/dashboard/admin'); return; }
     getMySessions()
       .then(setSessions)
       .finally(() => setLoading(false));

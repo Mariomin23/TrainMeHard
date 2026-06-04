@@ -63,7 +63,8 @@ export const register = async (data, res) => {
 
 export const login = async ({ email, password }, res) => {
   const user = await User.findOne({ email });
-  const valid = user && (await bcrypt.compare(password, user.passwordHash));
+  const hash = user?.passwordHash || user?.password;
+  const valid = user && hash && (await bcrypt.compare(password, hash));
 
   if (!valid) {
     logger.warn(`Failed login: ${email}`);

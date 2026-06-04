@@ -7,6 +7,7 @@ const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
 export const metadata: Metadata = {
   title: 'TrainMeHard — Encuentra tu Entrenador',
   description: 'Marketplace de entrenadores fitness. Busca, compara y contrata en minutos.',
+  icons: { icon: '/favicon.png' },
   openGraph: {
     title: 'TrainMeHard — Encuentra tu Entrenador',
     description: 'Marketplace de entrenadores fitness. Busca, compara y contrata en minutos.',

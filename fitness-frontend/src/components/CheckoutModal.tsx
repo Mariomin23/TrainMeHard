@@ -21,7 +21,7 @@ export default function CheckoutModal({ sessionId, amount, onClose, onSuccess }:
   const [error, setError] = useState('');
 
   useEffect(() => {
-    api.post(`/sessions/${sessionId}/pay`)
+    api.post(`/sessions/${sessionId}/checkout`)
       .then((r: { data: { data: { clientSecret: string } } }) => setClientSecret(r.data.data.clientSecret))
       .catch((err: { response?: { data?: { message?: string } } }) => setError(err.response?.data?.message || 'Error al inicializar pago'))
       .finally(() => setLoading(false));

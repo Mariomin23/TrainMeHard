@@ -3,12 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
-import { getMyProfile, updateProfile } from '@/services/professional.service';
+import { getMyProfile, updateProfile, connectStripe, getStripeStatus } from '@/services/professional.service';
 import { getMySessions, updateSessionStatus } from '@/services/session.service';
 import SessionCard from '@/components/SessionCard';
-import { Save, Plus, Trash2, AlertCircle } from 'lucide-react';
+import { Save, Plus, Trash2, AlertCircle, CreditCard, CheckCircle, ExternalLink } from 'lucide-react';
 import type { Session } from '@/types/session';
-import type { Professional, ProfessionalType, AvailabilitySlot } from '@/types/professional';
+import type { Professional, ProfessionalType, AvailabilitySlot, StripeStatus } from '@/types/professional';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const DAYS_ES: Record<string, string> = {
@@ -41,12 +41,14 @@ export default function TrainerDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savingAvail, setSavingAvail] = useState(false);
-  const [tab, setTab] = useState<'sessions' | 'profile' | 'availability'>('sessions');
+  const [tab, setTab] = useState<'sessions' | 'profile' | 'availability' | 'pagos'>('sessions');
+  const [stripeStatus, setStripeStatus] = useState<StripeStatus | null>(null);
+  const [connectingStripe, setConnectingStripe] = useState(false);
 
   useEffect(() => {
     if (!user) return;
-    Promise.all([getMyProfile(), getMySessions()])
-      .then(([p, s]: [Professional, Session[]]) => {
+    Promise.all([getMyProfile(), getMySessions(), getStripeStatus()])
+      .then(([p, s, stripe]: [Professional, Session[], StripeStatus]) => {
         setIsApproved(p.isApproved);
         setProfile({
           specialties: p.specialties || [],
@@ -58,6 +60,7 @@ export default function TrainerDashboardPage() {
         });
         setAvailability(p.availability || []);
         setSessions(s);
+        setStripeStatus(stripe);
       })
       .catch((err: unknown) => {
         const status = (err as { response?: { status?: number } })?.response?.status;
@@ -117,10 +120,21 @@ export default function TrainerDashboardPage() {
     setSessions(s => s.map(x => x._id === id ? { ...x, status: 'paid' as const } : x));
   };
 
+  const handleConnectStripe = async () => {
+    setConnectingStripe(true);
+    try {
+      const { onboardingUrl } = await connectStripe();
+      window.location.href = onboardingUrl;
+    } catch {
+      setConnectingStripe(false);
+    }
+  };
+
   const TABS = [
     { key: 'sessions', label: 'Sesiones' },
     { key: 'profile', label: 'Mi perfil' },
     { key: 'availability', label: 'Disponibilidad' },
+    { key: 'pagos', label: 'Pagos' },
   ] as const;
 
   return (
@@ -325,6 +339,68 @@ export default function TrainerDashboardPage() {
                 >
                   <Save size={16} /> {savingAvail ? 'Guardando...' : 'Guardar disponibilidad'}
                 </button>
+              </div>
+            )}
+
+            {tab === 'pagos' && (
+              <div className="bg-white rounded-3xl p-8 border border-gray-100 flex flex-col gap-6">
+                <div>
+                  <h2 className="font-semibold text-gray-900 mb-1">Cuenta de pagos (Stripe)</h2>
+                  <p className="text-sm text-gray-500">Conecta tu cuenta bancaria para recibir el 50% de cada sesión directamente.</p>
+                </div>
+
+                {stripeStatus?.chargesEnabled ? (
+                  <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-2xl">
+                    <CheckCircle size={20} className="text-green-600 shrink-0" />
+                    <div>
+                      <p className="font-semibold text-green-800 text-sm">Cuenta activa</p>
+                      <p className="text-xs text-green-700 mt-0.5">Recibirás los pagos automáticamente tras cada sesión.</p>
+                    </div>
+                  </div>
+                ) : stripeStatus?.connected && !stripeStatus.detailsSubmitted ? (
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-2xl">
+                      <AlertCircle size={18} className="text-yellow-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-yellow-800 text-sm">Configuración incompleta</p>
+                        <p className="text-xs text-yellow-700 mt-0.5">Completa el proceso de verificación en Stripe para activar los pagos.</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleConnectStripe}
+                      disabled={connectingStripe}
+                      className="flex items-center justify-center gap-2 w-full py-3 bg-green-600 text-white rounded-full font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
+                    >
+                      <ExternalLink size={14} />
+                      {connectingStripe ? 'Redirigiendo...' : 'Completar verificación'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-start gap-3 p-4 bg-gray-50 border border-gray-200 rounded-2xl">
+                      <CreditCard size={18} className="text-gray-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-gray-800 text-sm">Sin cuenta conectada</p>
+                        <p className="text-xs text-gray-600 mt-0.5">Los usuarios no podrán pagarte hasta que conectes tu cuenta bancaria.</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleConnectStripe}
+                      disabled={connectingStripe}
+                      className="flex items-center justify-center gap-2 w-full py-3 bg-green-600 text-white rounded-full font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
+                    >
+                      <ExternalLink size={14} />
+                      {connectingStripe ? 'Redirigiendo...' : 'Conectar cuenta Stripe'}
+                    </button>
+                  </div>
+                )}
+
+                <div className="border-t border-gray-100 pt-4">
+                  <p className="text-xs text-gray-400">
+                    TrainMeHard retiene el 50% de comisión por sesión. El 50% restante se transfiere automáticamente a tu cuenta.
+                    Procesado de forma segura por <span className="font-medium">Stripe Connect</span>.
+                  </p>
+                </div>
               </div>
             )}
           </>

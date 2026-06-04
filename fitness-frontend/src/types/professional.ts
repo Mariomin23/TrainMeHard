@@ -30,6 +30,13 @@ export interface Professional {
   rating: number
   reviewCount: number
   availability?: AvailabilitySlot[]
+  stripeAccountId?: string
+}
+
+export interface StripeStatus {
+  connected: boolean
+  detailsSubmitted: boolean
+  chargesEnabled: boolean
 }
 
 export interface ProfessionalSearchParams {

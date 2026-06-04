@@ -46,3 +46,21 @@ export const approveProfile = async (req, res, next) => {
     next(err);
   }
 };
+
+export const connectStripe = async (req, res, next) => {
+  try {
+    const result = await professionalService.createStripeConnectAccount(req.user.id);
+    success(res, result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const stripeStatus = async (req, res, next) => {
+  try {
+    const status = await professionalService.getStripeConnectStatus(req.user.id);
+    success(res, status);
+  } catch (err) {
+    next(err);
+  }
+};

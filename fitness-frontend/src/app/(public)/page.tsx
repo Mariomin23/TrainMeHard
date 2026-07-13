@@ -20,10 +20,10 @@ const STEPS = [
   { icon: Zap, title: 'Contacta', desc: 'Paga una sesión inicial y empieza hoy.' },
 ];
 
-const STATS = [
-  { value: '200+', label: 'Profesionales' },
-  { value: '4.9★', label: 'Valoración media' },
-  { value: '1.200+', label: 'Sesiones completadas' },
+const BETA_BADGES = [
+  { icon: '🚀', text: 'Plataforma en beta' },
+  { icon: '🎁', text: 'Acceso gratuito para los primeros profesionales' },
+  { icon: '🔒', text: 'Pagos seguros con Stripe desde el día 1' },
 ];
 
 export default function Home() {
@@ -31,13 +31,13 @@ export default function Home() {
     <main>
       <Hero />
 
-      {/* Stats bar */}
-      <div className="bg-white border-b border-gray-100 py-6 px-6">
-        <div className="max-w-4xl mx-auto grid grid-cols-3 gap-4 divide-x divide-gray-100">
-          {STATS.map(({ value, label }) => (
-            <div key={label} className="text-center px-4">
-              <p className="text-2xl font-bold text-gray-900">{value}</p>
-              <p className="text-xs text-gray-500 mt-0.5">{label}</p>
+      {/* Beta bar */}
+      <div className="bg-green-50 border-b border-green-100 py-4 px-6">
+        <div className="max-w-4xl mx-auto flex flex-wrap justify-center gap-6">
+          {BETA_BADGES.map(({ icon, text }) => (
+            <div key={text} className="flex items-center gap-2 text-sm text-green-800 font-medium">
+              <span>{icon}</span>
+              <span>{text}</span>
             </div>
           ))}
         </div>
